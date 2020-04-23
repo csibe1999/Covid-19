@@ -106,7 +106,7 @@ class App extends Component {
     return (
       <div className="App">
         <div style={{ width: "80vw" }} className="mx-auto">
-          <div className="mt-3">
+          <div className="m-3">
             <Select
               value={selectedOption}
               onChange={this.handleChange}
@@ -127,7 +127,7 @@ class App extends Component {
             ))}
           </NativeSelect> */}
         </div>
-        <div className="m-3" style={{ height: "50vh" }}>
+        <div className="ml-1 mr-3 mb-5" style={{ height: "60vh" }}>
           <div className="mb-n5 h5">
             Covid-19 cases and deaths in {this.state.act}
           </div>

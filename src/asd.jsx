@@ -106,7 +106,7 @@ class App extends Component {
     return (
       <div className="App">
         <div style={{ width: "80vw" }} className="mx-auto">
-          <div className="m-3 ">
+          <div className="mt-3">
             <Select
               value={selectedOption}
               onChange={this.handleChange}
