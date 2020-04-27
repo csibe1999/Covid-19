@@ -5,9 +5,12 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { NativeSelect } from "@material-ui/core";
 import Select from "react-select";
+import Card from "./component/cards";
 
 class App extends Component {
   state = {
+    data: {},
+    date: [],
     chartData: {},
     chartDayData: {},
     country: {},
@@ -16,28 +19,22 @@ class App extends Component {
   };
 
   async componentWillMount() {
-    this.getChartData("hungary");
+    await this.getChartData("hungary");
   }
   formData(data) {
     return data.map((e) => e.split("T")[0]);
   }
-  getDayByConfirmed(data) {
+  getDay(data) {
     let a = [];
     for (let i = 0; i < data.length; i++) {
-      a[i + 1] = data[i + 1] - data[i];
+      a[i] = data[i + 1] - data[i];
     }
-    return a;
-  }
-  getDayByDeaths(data) {
-    let a = [];
-    for (let i = 0; i < data.length; i++) {
-      a[i + 1] = data[i + 1] - data[i];
-    }
+    a = a.splice(a.length - 30, a.length);
     return a;
   }
 
   getChartData = async (c) => {
-    this.setState({ act: c.charAt(0).toUpperCase() + c.slice(1) });
+    await this.setState({ act: c.charAt(0).toUpperCase() + c.slice(1) });
     //https://api.covid19api.com/dayone/country/hungary
     let res = await axios.get(
       "https://api.covid19api.com/total/dayone/country/" + c
@@ -48,13 +45,26 @@ class App extends Component {
     country = country.map((e, i) => ({ value: i, label: e }));
     this.setState({ country: country });
     let Confirmed = res.data.map((e) => e.Confirmed);
-    let Date = this.formData(res.data.map((e) => e.Date));
-    let DayDate = this.formData(res.data.map((e) => e.Date));
+    let Recovered = res.data.map((e) => e.Recovered);
     let Deaths = res.data.map((e) => e.Deaths);
-    let DayConfirmed = this.getDayByConfirmed(res.data.map((e) => e.Confirmed));
-    let DayDeaths = this.getDayByDeaths(res.data.map((e) => e.Deaths));
+    let Date = this.formData(res.data.map((e) => e.Date));
+
+    let DayDeaths = this.getDay(res.data.map((e) => e.Deaths));
+    let DayConfirmed = this.getDay(res.data.map((e) => e.Confirmed));
+    let DayRecovered = this.getDay(res.data.map((e) => e.Recovered));
+    let DayDate = this.formData(res.data.map((e) => e.Date));
+
+    DayDate = DayDate.splice(DayDate.length - 29, DayDate.length);
+
+    let lastConfirmed = Confirmed[Confirmed.length - 1];
+    let lastRecovered = Recovered[Recovered.length - 1];
+    let lastDeaths = Deaths[Deaths.length - 1];
+
     DayConfirmed.pop();
     DayDeaths.pop();
+    DayRecovered.pop();
+
+    this.setState({ data: { lastConfirmed, lastRecovered, lastDeaths } });
     this.setState({
       chartData: {
         labels: Date,
@@ -64,7 +74,14 @@ class App extends Component {
             type: "line",
             data: Deaths,
             fill: false,
-            borderColor: "rgba(255,99,132,1)",
+            borderColor: "#e74a3b",
+          },
+          {
+            label: "Recovered",
+            type: "line",
+            data: Recovered,
+            fill: false,
+            borderColor: ["#1cc88a"],
           },
           {
             label: "Cases",
@@ -80,17 +97,30 @@ class App extends Component {
         datasets: [
           {
             label: "New dead",
-            type: "line",
+            type: "bar",
             fill: false,
             data: DayDeaths,
-            borderColor: "rgba(255,99,132,1)",
+            borderColor: "rgb(231,74,59,1)",
+            backgroundColor: "rgb(231,74,59,0.5)",
+            borderWidth: 1,
+          },
+          {
+            label: "New recover",
+            type: "bar",
+            fill: false,
+            data: DayRecovered,
+            borderColor: "rgb(28,200,138,1)",
+            backgroundColor: "rgb(28,200,138,0.5)",
+            borderWidth: 1,
           },
           {
             label: "New case",
-            type: "line",
+            type: "bar",
             fill: false,
             data: DayConfirmed,
             borderColor: "rgba(54, 162, 235, 1)",
+            backgroundColor: "rgb(54, 162, 235,0.5)",
+            borderWidth: 1,
           },
         ],
       },
@@ -106,14 +136,15 @@ class App extends Component {
     return (
       <div className="App">
         <div style={{ width: "80vw" }} className="mx-auto">
-          <div className="m-3">
+          <div className="m-3 mt-4">
             <Select
+              className=""
               value={selectedOption}
               onChange={this.handleChange}
               options={this.state.country}
             />
           </div>
-
+          <Card data={this.state.data}></Card>
           {/* <NativeSelect
             className="form-control mt-4"
             defaultValue=""
@@ -129,7 +160,7 @@ class App extends Component {
         </div>
         <div className="ml-1 mr-3 mb-5" style={{ height: "60vh" }}>
           <div className="mb-n5 h5">
-            Covid-19 cases and deaths in {this.state.act}
+            Covid-19 cases recover and deaths in {this.state.act}
           </div>
           <div className="mt-n5" style={{ height: "60vh" }}>
             <Line
