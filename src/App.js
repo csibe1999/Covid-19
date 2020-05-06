@@ -3,7 +3,6 @@ import "./App.css";
 import { Line } from "react-chartjs-2";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { NativeSelect } from "@material-ui/core";
 import Select from "react-select";
 import Card from "./component/cards";
 
@@ -32,6 +31,13 @@ class App extends Component {
     a = a.splice(a.length - 30, a.length);
     return a;
   }
+  getActives(b, c, d) {
+    let a = [];
+    for (let i = 0; i < b.length; i++) {
+      a[i] = b[i] - (c[i] + d[i]);
+    }
+    return a;
+  }
 
   getChartData = async (c) => {
     await this.setState({ act: c.charAt(0).toUpperCase() + c.slice(1) });
@@ -44,31 +50,43 @@ class App extends Component {
     country.sort();
     country = country.map((e, i) => ({ value: i, label: e }));
     this.setState({ country: country });
-    let Confirmed = res.data.map((e) => e.Confirmed);
-    let Recovered = res.data.map((e) => e.Recovered);
-    let Deaths = res.data.map((e) => e.Deaths);
+    let Confirmed = await res.data.map((e) => e.Confirmed);
+    let Recovered = await res.data.map((e) => e.Recovered);
+    let Deaths = await res.data.map((e) => e.Deaths);
     let Date = this.formData(res.data.map((e) => e.Date));
+    let Actives = this.getActives(Confirmed, Recovered, Deaths);
 
     let DayDeaths = this.getDay(res.data.map((e) => e.Deaths));
     let DayConfirmed = this.getDay(res.data.map((e) => e.Confirmed));
     let DayRecovered = this.getDay(res.data.map((e) => e.Recovered));
     let DayDate = this.formData(res.data.map((e) => e.Date));
 
-    DayDate = DayDate.splice(DayDate.length - 29, DayDate.length);
+    DayDate = DayDate.splice(DayDate.length - 29, 29);
+    DayDate.push(" ");
 
     let lastConfirmed = Confirmed[Confirmed.length - 1];
     let lastRecovered = Recovered[Recovered.length - 1];
     let lastDeaths = Deaths[Deaths.length - 1];
+    let lastActives = Actives[Actives.length - 1];
 
-    DayConfirmed.pop();
+    /*  DayConfirmed.pop();
     DayDeaths.pop();
-    DayRecovered.pop();
+    DayRecovered.pop(); */
 
-    this.setState({ data: { lastConfirmed, lastRecovered, lastDeaths } });
+    this.setState({
+      data: { lastConfirmed, lastRecovered, lastDeaths, lastActives },
+    });
     this.setState({
       chartData: {
         labels: Date,
         datasets: [
+          {
+            label: "Cases",
+            type: "line",
+            data: Confirmed,
+            fill: false,
+            borderColor: ["rgba(54, 162, 235, 1)"],
+          },
           {
             label: "Deads",
             type: "line",
@@ -84,11 +102,11 @@ class App extends Component {
             borderColor: ["#1cc88a"],
           },
           {
-            label: "Cases",
+            label: "Actives",
             type: "line",
-            data: Confirmed,
+            data: Actives,
             fill: false,
-            borderColor: ["rgba(54, 162, 235, 1)"],
+            borderColor: "rgb(246,194,61,1)",
           },
         ],
       },
@@ -124,6 +142,10 @@ class App extends Component {
           },
         ],
       },
+      chartCase: {
+        labels: Date,
+        datasets: [],
+      },
     });
   };
   handleChange = (selectedOption) => {
@@ -145,18 +167,6 @@ class App extends Component {
             />
           </div>
           <Card data={this.state.data}></Card>
-          {/* <NativeSelect
-            className="form-control mt-4"
-            defaultValue=""
-            onChange={(e) => this.handleChange(e.target.value)}
-          >
-            <option value="">Hungary</option>
-            {this.state.country.map((e, i) => (
-              <option key={i} value={e}>
-                {e}
-              </option>
-            ))}
-          </NativeSelect> */}
         </div>
         <div className="ml-1 mr-3 mb-5" style={{ height: "60vh" }}>
           <div className="mb-n5 h5">

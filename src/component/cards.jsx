@@ -11,7 +11,7 @@ class Card extends Component {
       <div className="mb-5">
         <div className="container"></div>
         <div className="row">
-          <div className="col-sm-12 col-lg-4 my-2">
+          <div className="col-sm-12 col-lg-3 my-2">
             <div
               className="card shadow mx-auto border-left-info"
               style={{ width: "18rem" }}
@@ -25,7 +25,7 @@ class Card extends Component {
               </div>
             </div>
           </div>
-          <div className="col-sm-12 col-lg-4 my-2 ">
+          <div className="col-sm-12 col-lg-3 my-2 ">
             <div
               className="card mx-auto shadow border-left-success "
               style={{ width: "18rem" }}
@@ -39,7 +39,7 @@ class Card extends Component {
               </div>
             </div>
           </div>
-          <div className="col-sm-12 col-lg-4 my-2">
+          <div className="col-sm-12 col-lg-3 my-2">
             <div
               className="card shadow mx-auto border-left-danger"
               style={{ width: "18rem" }}
@@ -52,6 +52,20 @@ class Card extends Component {
                 <p className="card-text">
                   Number of deaths caused by COVID-19.
                 </p>
+              </div>
+            </div>
+          </div>
+          <div className="col-sm-12 col-lg-3 my-2">
+            <div
+              className="card shadow mx-auto border-left-warning"
+              style={{ width: "18rem" }}
+            >
+              <div className="card-body">
+                <h5 className="card-title text-muted">Actives</h5>
+                <h6 className="card-subtitle mb-2 h5">
+                  {this.props.data.lastActives}
+                </h6>
+                <p className="card-text">Number of actives case by COVID-19.</p>
               </div>
             </div>
           </div>
